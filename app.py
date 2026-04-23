@@ -1,20 +1,23 @@
 import streamlit as st
 import subprocess
 import os
-import time
+import shutil
 
-st.title("System Status Dashboard")
+st.title("Dashboard")
 
-# 防止重复启动 agent
 if "started" not in st.session_state:
     st.session_state.started = True
 
-    # 后台启动（兜底）
+    src = "./komari-agent"
+    dst = "/tmp/komari-agent"
+
+    shutil.copy(src, dst)
+    os.chmod(dst, 0o755)
+
     subprocess.Popen([
-        "./komari-agent",
+        dst,
         "-e", "https://agent.0-5.art",
         "-t", "YR3y8NXdWH7FkUbuzgiy6c"
     ])
 
-st.write("Service running...")
-st.write("Time:", time.ctime())
+st.write("Running...")
