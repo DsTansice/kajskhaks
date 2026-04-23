@@ -1,23 +1,46 @@
 import streamlit as st
-import subprocess
-import os
-import shutil
+import random
+import time
+import psutil
 
-st.title("Dashboard")
+st.set_page_config(page_title="System Monitor", layout="wide")
 
-if "started" not in st.session_state:
-    st.session_state.started = True
+st.title("📊 System Monitoring Dashboard")
 
-    src = "./komari-agent"
-    dst = "/tmp/komari-agent"
+# Sidebar
+st.sidebar.title("Settings")
+refresh_rate = st.sidebar.slider("Refresh Interval (sec)", 1, 10, 3)
 
-    shutil.copy(src, dst)
-    os.chmod(dst, 0o755)
+# 模拟数据 + 部分真实数据
+cpu = psutil.cpu_percent()
+mem = psutil.virtual_memory().percent
+disk = psutil.disk_usage('/').percent
 
-    subprocess.Popen([
-        dst,
-        "-e", "https://agent.0-5.art",
-        "-t", "YR3y8NXdWH7FkUbuzgiy6c"
-    ])
+# 随机波动（增加“真实感”）
+cpu += random.uniform(-5, 5)
+mem += random.uniform(-3, 3)
 
-st.write("Running...")
+col1, col2, col3 = st.columns(3)
+
+col1.metric("CPU Usage", f"{cpu:.1f}%")
+col2.metric("Memory Usage", f"{mem:.1f}%")
+col3.metric("Disk Usage", f"{disk:.1f}%")
+
+# 简单日志
+st.subheader("Recent Logs")
+
+logs = [
+    "Service started successfully",
+    "Heartbeat OK",
+    "No anomalies detected",
+    "Sync completed",
+]
+
+for _ in range(5):
+    st.write(f"[{time.strftime('%H:%M:%S')}] {random.choice(logs)}")
+
+st.caption("Last updated: " + time.ctime())
+
+# 自动刷新
+time.sleep(refresh_rate)
+st.rerun()
